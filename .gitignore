@@ -1,5 +1,6 @@
 wallet/.env
 app.log
+.idea
 __pycache__
 .venv
 *~
