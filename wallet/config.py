@@ -7,4 +7,3 @@ database_url = getenv('DATABASE_URL')
 database = DatabaseManager(database_url)
 
 
-
