@@ -68,7 +68,7 @@ class DatabaseManager:
         if not tables_exist:
             async with self.engine.begin() as conn:
                 await conn.run_sync(SQLModel.metadata.create_all)
-            await self.fill_tables()
+            # await self.fill_tables()  # Только для тестов, не используем в продакшене!
 
     async def fill_tables(self):
         first_wallet = self.wallet(uuid=str(uuid.uuid4()), balance=0)
