@@ -19,9 +19,6 @@ class DatabaseManager:
             session.add(new_wallet)
             await session.commit()
 
-    def check_balance_for_decrease(self, balance: int, amount: int) -> bool:
-        return balance >= amount
-
     async def get_wallet_balance(self, wallet_uuid: str) -> int:
         async with self.async_session() as session:
             wallet_obj = await session.get(self.wallet, wallet_uuid)
@@ -53,7 +50,7 @@ class DatabaseManager:
             if not result:
                 await self.create_wallet(wallet_uuid, 0)  # создаем кошелек в любом случае
                 raise Exception(f'Кошелек {wallet_uuid} имеет нулевой баланс. Не хватает средств для вывода')
-            if self.check_balance_for_decrease(result.balance, amount):
+            if result.balance >= amount:
                 result.balance -= amount
                 await session.commit()
             else:
