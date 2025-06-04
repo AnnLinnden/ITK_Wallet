@@ -1,0 +1,51 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - wallet/.env
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - my-network
+
+  db:
+    image: postgres:15
+    restart: always
+    container_name: my_postgres
+    env_file:
+      - wallet/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - my-network
+
+  db_setup:
+    image: postgres:15
+    depends_on:
+      - db
+    restart: on-failure
+    entrypoint: ["psql", "-h", "db", "-U", "postgres", "-c", "CREATE DATABASE test_db;"]
+    environment:
+      PGPASSWORD: postgres
+    networks:
+      - my-network
+
+volumes:
+  postgres_data:
+
+
+networks:
+  my-network:
+    driver: bridge

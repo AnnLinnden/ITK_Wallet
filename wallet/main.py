@@ -11,8 +11,8 @@ logging.basicConfig(level=logging.INFO,
                     handlers=[handler_file, handler_console])
 logger = logging.getLogger(__name__)
 
-database = get_database()[0]
 
+database = get_database()[0]
 
 @asynccontextmanager  # .on_event("startup") устарел
 async def lifespan(app: FastAPI):
@@ -61,5 +61,4 @@ async def withdraw_from_wallet(wallet_uuid: str, amount: Amount):
 
 if __name__ == "__main__":  # не использовать в продакшене!
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8000)
