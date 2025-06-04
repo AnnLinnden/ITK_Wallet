@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
-from wallet.config import database
+from wallet.config import get_database
 from wallet.db.models.schemas import Amount
 
 handler_console = logging.StreamHandler()
@@ -10,6 +10,8 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     handlers=[handler_file, handler_console])
 logger = logging.getLogger(__name__)
+
+database = get_database()[0]
 
 
 @asynccontextmanager  # .on_event("startup") устарел
@@ -21,6 +23,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f'Ошибка при создании таблиц: {e}')
     yield
+
 
 app = FastAPI(lifespan=lifespan)
 
@@ -41,6 +44,7 @@ async def deposit_to_wallet(wallet_uuid: str, amount: Amount):
         return f'Баланс кошелька {wallet_uuid} увеличен на {amount.amount}'  # amount.amount для корректного ответа
         # из модели pydantic
     except Exception as e:
+        logger.error(f'Ошибка при увеличении баланса: {e}')
         raise HTTPException(status_code=500, detail=f'Ошибка при увеличении баланса: {e}')  # 500 - потому что,
         # скорее всего, проблема на нашей стороне, а не у пользователя
 
@@ -54,6 +58,8 @@ async def withdraw_from_wallet(wallet_uuid: str, amount: Amount):
         raise HTTPException(status_code=400, detail=f'Ошибка при уменьшении баланса: {e}')  # а тут скорее проблема
         # с запросом, то есть на стороне пользователя
 
+
 if __name__ == "__main__":  # не использовать в продакшене!
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,7 +1,6 @@
 from sqlalchemy import text, select
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-import uuid
 from .models.sql_models import Wallet
 
 
@@ -68,13 +67,6 @@ class DatabaseManager:
         if not tables_exist:
             async with self.engine.begin() as conn:
                 await conn.run_sync(SQLModel.metadata.create_all)
-            # await self.fill_tables()  # Только для тестов, не используем в продакшене!
 
-    async def fill_tables(self):
-        first_wallet = self.wallet(uuid=str(uuid.uuid4()), balance=0)
-        second_wallet = self.wallet(uuid=str(uuid.uuid4()), balance=100)
-        third_wallet = self.wallet(uuid=str(uuid.uuid4()), balance=500)
-        async with self.async_session() as session:
-            session.add_all([first_wallet, second_wallet, third_wallet])
-            await session.commit()
+
 
