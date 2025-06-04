@@ -2,7 +2,7 @@ import pytest
 import asyncio
 import os
 
-os.environ['TESTING'] = 'True'  # Эту строку нельзя переносить ниже, иначе app создастся до включения тестового режима
+os.environ['TESTING'] = 'True'
 
 
 @pytest.mark.asyncio
@@ -79,7 +79,7 @@ async def test_concurrent_requests_success(client, fill_test_table, test_db_sess
         return await client.post(f"/api/v1/wallets/{test_wallet.uuid}/withdraw", json={"amount": 200})
 
     responses = [await make_deposit(), await make_deposit(), await make_withdraw()]
-    await test_db_session.refresh(test_wallet)
+    await test_db_session.refresh(test_wallet)  # без этого у нас на балансе отобразится 0, а не 100
     for response in responses:
         assert response.status_code == 200
         assert test_wallet.balance == 100

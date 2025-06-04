@@ -31,10 +31,11 @@ async def prepare_test_db():
 
 @pytest_asyncio.fixture(scope="session")
 async def db_engine():
-    # Создает движок с подключением к тестовой базе данных
-    engine = create_async_engine(db_url, echo=True) # Параметр echo=True включает вывод SQL-запросов в консоль для отладки.
-    yield engine # Выдает движок для использования в тестах.
-    await engine.dispose() # и освобождает ресурсы движка (engine.dispose()).
+    engine = create_async_engine(db_url,
+                                 echo=True)  # Вывод SQL-запросов в консоль для отладки очень нужен
+    yield engine
+    await engine.dispose()  # освобождаем ресурсы движка
+
 
 @pytest_asyncio.fixture
 async def test_db_session(db_engine) -> AsyncSession:
@@ -66,10 +67,10 @@ async def fill_test_table(test_db_session):
     test_db_session.add_all([first_wallet, second_wallet, third_wallet])
     await test_db_session.commit()
 
-    # Вместо ленивой загрузки загружаем актуальное состояние немедленно. Без этого словим greenlet_spawn
+    # Вместо ленивой загрузки загружаем актуальное состояние немедленно. Иначе словим greenlet_spawn
     for wallet in [first_wallet, second_wallet, third_wallet]:
         await test_db_session.refresh(wallet)
-        _ = wallet.uuid
+        _ = wallet.uuid  # _ - потому что дальше эти переменные в коде не нужны
         _ = wallet.balance
 
     return {"zero balance": first_wallet, "100 balance": second_wallet, "500 balance": third_wallet}
